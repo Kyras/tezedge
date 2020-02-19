@@ -12,7 +12,10 @@ pub use commit_log::{CommitLogError, CommitLogRef, CommitLogs, CommitLogWithSche
 pub use database::{DBError, KeyValueStoreWithSchema};
 pub use schema::{CommitLogDescriptor, CommitLogSchema, KeyValueSchema};
 
-use crate::persistent::sequence::Sequences;
+use crate::persistent::{
+    peer_messages::PeerMessages,
+    sequence::Sequences,
+};
 use crate::skip_list::{Bucket, TypedSkipList, DatabaseBackedSkipList};
 
 pub mod sequence;
@@ -20,6 +23,7 @@ pub mod codec;
 pub mod schema;
 pub mod database;
 pub mod commit_log;
+pub mod peer_messages;
 
 /// Open RocksDB database at given path with specified Column Family configurations
 ///
@@ -67,6 +71,8 @@ pub struct PersistentStorage {
     seq: Arc<Sequences>,
     /// skip list backed context storage
     cs: ContextList,
+    /// database for recording all incoming p2p messages
+    recorder: Arc<PeerMessages>,
 }
 
 impl PersistentStorage {
@@ -75,7 +81,8 @@ impl PersistentStorage {
             seq: Arc::new(Sequences::new(kv.clone(), 1000)),
             kv: kv.clone(),
             clog,
-            cs: Arc::new(RwLock::new(DatabaseBackedSkipList::new(0, kv).expect("failed to initialize context storage"))),
+            cs: Arc::new(RwLock::new(DatabaseBackedSkipList::new(0, kv.clone()).expect("failed to initialize context storage"))),
+            recorder: Arc::new(PeerMessages::new(kv)),
         }
     }
 
@@ -96,5 +103,8 @@ impl PersistentStorage {
 
     #[inline]
     pub fn context_storage(&self) -> ContextList { self.cs.clone() }
+
+    #[inline]
+    pub fn recorder(&self) -> Arc<PeerMessages> { self.recorder.clone() }
 }
 

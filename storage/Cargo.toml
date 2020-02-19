@@ -15,6 +15,7 @@ hex = "0.4"
 rocksdb = "0.13"
 serde = { version = "1.0", features = ["derive", "rc"] }
 slog = "2.5"
+crossbeam = "0.7.3"
 # local dependencies
 crypto = { path = "../crypto" }
 networking = { path = "../networking" }

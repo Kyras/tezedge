@@ -9,8 +9,11 @@ use lazy_static::lazy_static;
 
 use tezos_encoding::encoding::{Encoding, Field, HasEncoding, Tag, TagMap};
 
-use crate::p2p::binary_message::cache::{BinaryDataCache, CachedData, CacheReader, CacheWriter};
-use crate::p2p::encoding::prelude::*;
+use crate::p2p::{
+    binary_message::cache::{BinaryDataCache, CachedData, CacheReader, CacheWriter},
+    encoding::prelude::*,
+};
+
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum PeerMessage {
@@ -35,7 +38,6 @@ pub enum PeerMessage {
     GetOperationsForBlocks(GetOperationsForBlocksMessage),
     OperationsForBlocks(OperationsForBlocksMessage),
 }
-
 
 #[derive(Serialize, Deserialize, Debug, Getters)]
 pub struct PeerMessageResponse {

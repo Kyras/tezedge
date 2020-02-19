@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use crypto::hash::Hash;
 use std::collections::HashMap;
 use std::ops::Range;
+use tezos_messages::p2p::encoding::peer::PeerMessage;
 
 /// Possible errors for schema
 #[derive(Debug, Fail)]
@@ -116,6 +117,8 @@ impl<K, V> BincodeEncoded for HashMap<K, V>
     where K: std::hash::Hash + Eq + Serialize + for<'a> Deserialize<'a>,
           V: Serialize + for<'a> Deserialize<'a>
 {}
+
+impl BincodeEncoded for PeerMessage {}
 
 /// Create number from a bytes
 #[macro_export(local_inner_macros)]

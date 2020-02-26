@@ -10,7 +10,7 @@ use tezos_encoding::encoding::{Encoding, Field, HasEncoding, SchemaType};
 
 use crate::p2p::binary_message::cache::{BinaryDataCache, CachedData, CacheReader, CacheWriter};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct OperationMessage {
     operation: Operation,
 
@@ -39,7 +39,7 @@ impl CachedData for OperationMessage {
 }
 
 // -----------------------------------------------------------------------------------------------
-#[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub struct Operation {
     branch: BlockHash,
     data: Vec<u8>,
@@ -85,7 +85,7 @@ impl CachedData for Operation {
 }
 
 // -----------------------------------------------------------------------------------------------
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct GetOperationsMessage {
     get_operations: Vec<OperationHash>,
 

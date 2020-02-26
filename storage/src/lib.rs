@@ -1,6 +1,7 @@
 // Copyright (c) SimpleStaking and Tezedge Contributors
 // SPDX-License-Identifier: MIT
 #![feature(const_fn, const_if_match)]
+#![feature(type_alias_impl_trait)]
 
 use std::sync::Arc;
 
@@ -88,7 +89,7 @@ pub enum StorageError {
     #[fail(display = "Sequence generator failed: {}", error)]
     SequenceError {
         error: SequenceError
-    }
+    },
 }
 
 impl From<DBError> for StorageError {
@@ -156,6 +157,7 @@ pub mod tests_common {
     use crate::skip_list::{DatabaseBackedSkipList, Lane};
 
     use super::*;
+    use crate::persistent::peer_messages::PeerMessages;
 
     pub struct TmpStorage {
         persistent_storage: PersistentStorage,
@@ -183,6 +185,7 @@ pub mod tests_common {
                 Sequences::descriptor(),
                 DatabaseBackedSkipList::descriptor(),
                 Lane::descriptor(),
+                PeerMessages::descriptor(),
             ])?;
             let clog = open_cl(&path, vec![
                 BlockStorage::descriptor(),

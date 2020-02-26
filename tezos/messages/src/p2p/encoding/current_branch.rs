@@ -12,7 +12,7 @@ use tezos_encoding::encoding::{Encoding, Field, HasEncoding, SchemaType};
 use crate::p2p::binary_message::cache::{BinaryDataCache, CachedData, CacheReader, CacheWriter};
 use crate::p2p::encoding::block_header::BlockHeader;
 
-#[derive(Clone, Serialize, Deserialize, Debug, Getters)]
+#[derive(Clone, Serialize, Deserialize, Debug, Getters, PartialEq)]
 pub struct CurrentBranchMessage {
     #[get = "pub"]
     chain_id: ChainId,
@@ -54,7 +54,7 @@ impl CachedData for CurrentBranchMessage {
 }
 
 // -----------------------------------------------------------------------------------------------
-#[derive(Clone, Serialize, Deserialize, Debug, Getters)]
+#[derive(Clone, Serialize, Deserialize, Debug, Getters, PartialEq)]
 pub struct CurrentBranch {
     #[get = "pub"]
     current_head: BlockHeader,
@@ -101,7 +101,7 @@ impl CachedData for CurrentBranch {
 }
 
 // -----------------------------------------------------------------------------------------------
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct GetCurrentBranchMessage {
     pub chain_id: ChainId,
 

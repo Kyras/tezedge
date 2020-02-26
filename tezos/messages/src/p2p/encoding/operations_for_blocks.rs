@@ -30,7 +30,7 @@ impl OperationsForBlock {
         OperationsForBlock {
             hash,
             validation_pass,
-            body: Default::default()
+            body: Default::default(),
         }
     }
 }
@@ -46,7 +46,7 @@ impl HasEncoding for OperationsForBlock {
 
 impl CachedData for OperationsForBlock {
     #[inline]
-    fn cache_reader(&self) -> & dyn CacheReader {
+    fn cache_reader(&self) -> &dyn CacheReader {
         &self.body
     }
 
@@ -66,7 +66,7 @@ pub struct OperationsForBlocksMessage {
     #[get = "pub"]
     operations: Vec<Operation>,
     #[serde(skip_serializing)]
-    body: BinaryDataCache
+    body: BinaryDataCache,
 }
 
 impl OperationsForBlocksMessage {
@@ -75,7 +75,7 @@ impl OperationsForBlocksMessage {
             operations_for_block,
             operation_hashes_path,
             operations,
-            body: Default::default()
+            body: Default::default(),
         }
     }
 }
@@ -92,7 +92,7 @@ impl HasEncoding for OperationsForBlocksMessage {
 
 impl CachedData for OperationsForBlocksMessage {
     #[inline]
-    fn cache_reader(&self) -> & dyn CacheReader {
+    fn cache_reader(&self) -> &dyn CacheReader {
         &self.body
     }
 
@@ -124,7 +124,7 @@ impl HasEncoding for PathRight {
 
 impl CachedData for PathRight {
     #[inline]
-    fn cache_reader(&self) -> & dyn CacheReader {
+    fn cache_reader(&self) -> &dyn CacheReader {
         &self.body
     }
 
@@ -156,7 +156,7 @@ impl HasEncoding for PathLeft {
 
 impl CachedData for PathLeft {
     #[inline]
-    fn cache_reader(&self) -> & dyn CacheReader {
+    fn cache_reader(&self) -> &dyn CacheReader {
         &self.body
     }
 
@@ -171,7 +171,7 @@ impl CachedData for PathLeft {
 pub enum Path {
     Left(Box<PathLeft>),
     Right(Box<PathRight>),
-    Op
+    Op,
 }
 
 pub fn path_encoding() -> Encoding {
@@ -181,12 +181,12 @@ pub fn path_encoding() -> Encoding {
             Tag::new(0xF0, "Left", Encoding::Lazy(Arc::new(PathLeft::encoding))),
             Tag::new(0x0F, "Right", Encoding::Lazy(Arc::new(PathRight::encoding))),
             Tag::new(0x00, "Op", Encoding::Unit),
-        ])
+        ]),
     )
 }
 
 impl CachedData for Path {
-    fn cache_reader(&self) -> & dyn CacheReader {
+    fn cache_reader(&self) -> &dyn CacheReader {
         &DUMMY_BODY_CACHE
     }
 
@@ -196,7 +196,7 @@ impl CachedData for Path {
 }
 
 // -----------------------------------------------------------------------------------------------
-#[derive(Serialize, Deserialize, Debug, Getters)]
+#[derive(Serialize, Deserialize, Debug, Getters, PartialEq)]
 pub struct GetOperationsForBlocksMessage {
     #[get = "pub"]
     get_operations_for_blocks: Vec<OperationsForBlock>,
@@ -208,7 +208,7 @@ impl GetOperationsForBlocksMessage {
     pub fn new(get_operations_for_blocks: Vec<OperationsForBlock>) -> Self {
         GetOperationsForBlocksMessage {
             get_operations_for_blocks,
-            body: Default::default()
+            body: Default::default(),
         }
     }
 }
@@ -223,7 +223,7 @@ impl HasEncoding for GetOperationsForBlocksMessage {
 
 impl CachedData for GetOperationsForBlocksMessage {
     #[inline]
-    fn cache_reader(&self) -> & dyn CacheReader {
+    fn cache_reader(&self) -> &dyn CacheReader {
         &self.body
     }
 

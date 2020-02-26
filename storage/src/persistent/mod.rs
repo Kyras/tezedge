@@ -17,6 +17,9 @@ use crate::persistent::{
     sequence::Sequences,
 };
 use crate::skip_list::{Bucket, TypedSkipList, DatabaseBackedSkipList};
+use crate::persistent::peer_messages::{Recorder, Nsec};
+use tezos_messages::p2p::encoding::peer::PeerMessage;
+use failure::Error;
 
 pub mod sequence;
 pub mod codec;
@@ -59,6 +62,8 @@ pub fn open_cl<P, I>(path: P, cfs: I) -> Result<CommitLogs, CommitLogError>
 
 pub type ContextMap = HashMap<String, Bucket<Vec<u8>>>;
 pub type ContextList = Arc<RwLock<dyn TypedSkipList<String, Bucket<Vec<u8>>, ContextMap> + Sync + Send>>;
+pub type MessageRecorder = Arc<dyn Recorder<Nsec, PeerMessage, Error> + Sync + Send>;
+pub type MessageReplayer = Arc<PeerMessages>;
 
 /// Groups all components required for correct permanent storage functioning
 #[derive(Clone)]
@@ -105,6 +110,9 @@ impl PersistentStorage {
     pub fn context_storage(&self) -> ContextList { self.cs.clone() }
 
     #[inline]
-    pub fn recorder(&self) -> Arc<PeerMessages> { self.recorder.clone() }
+    pub fn recorder(&self) -> MessageRecorder { self.recorder.clone() }
+
+    #[inline]
+    pub fn replayer(&self) -> MessageReplayer { self.recorder.clone() }
 }
 

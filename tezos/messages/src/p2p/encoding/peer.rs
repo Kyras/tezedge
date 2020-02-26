@@ -15,7 +15,7 @@ use crate::p2p::{
 };
 
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum PeerMessage {
     Disconnect,
     Advertise(AdvertiseMessage),

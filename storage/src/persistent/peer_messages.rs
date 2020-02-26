@@ -3,19 +3,35 @@ use std::time::Instant;
 use crossbeam::crossbeam_channel::{unbounded, Sender, Receiver};
 use failure::Error;
 
-use crate::persistent::{KeyValueStoreWithSchema, KeyValueSchema};
+use crate::persistent::{
+    KeyValueStoreWithSchema, KeyValueSchema,
+    database::IteratorWithSchema,
+};
 use tezos_messages::p2p::encoding::peer::PeerMessage;
 use std::{
     mem::swap,
     thread::{JoinHandle, spawn},
 };
+use crate::IteratorMode;
 
 pub type MessageDatabase = dyn KeyValueStoreWithSchema<PeerMessages> + Sync + Send;
+
+/// Trait for recording messages
+pub trait Recorder<K, V, E> {
+    fn record(&mut self, msg: V) -> Result<Option<K>, E>;
+}
+
+/// Trait for replaying messages
+/// TODO: Find out to resolve bad lifetime
+pub trait Replayer<T> {
+    type Iterator: Iterator<Item=T>;
+    fn replay(&self) -> Result<Self::Iterator, Error>;
+}
 
 /// Storage responsible for storing network messages in precise
 /// time sequence.
 pub struct PeerMessages {
-    _db: Arc<MessageDatabase>,
+    db: Arc<MessageDatabase>,
     sender: Arc<Sender<(Nsec, PeerMessage)>>,
     sequencer: TimeLineSequencer,
     locked: AtomicBool,
@@ -30,7 +46,7 @@ impl PeerMessages {
         let handle = spawn(move || message_recording(tmp, receiver));
 
         Self {
-            _db: db,
+            db,
             sender: Arc::new(sender),
             sequencer: TimeLineSequencer::new(),
             locked: AtomicBool::new(false),
@@ -38,16 +54,25 @@ impl PeerMessages {
         }
     }
 
-    /// Record new incoming message
-    pub fn record(&mut self, msg: PeerMessage) -> Result<(), Error> {
+    /// Temporary solution to database lifetime problem
+    pub fn replay(&self) -> Result<IteratorWithSchema<Self>, Error> {
+        self.db.iterator(IteratorMode::<Self>::Start).map_err(Error::from)
+    }
+}
+
+impl Recorder<Nsec, PeerMessage, Error> for PeerMessages {
+    fn record(&mut self, msg: PeerMessage) -> Result<Option<Nsec>, Error> {
         if !self.locked.load(Ordering::SeqCst) {
-            self.sender.send((self.sequencer.new_ts(), msg))
-                .map_err(Error::from)
+            let ts = self.sequencer.new_ts();
+            self.sender.send((ts, msg))
+                .map_err(Error::from)?;
+            Ok(Some(ts))
         } else {
-            Ok(())
+            Ok(None)
         }
     }
 }
+
 
 /// Manual Drop to make sure, all data that potentially caused the failure of node are
 /// correctly recorded.
@@ -64,12 +89,14 @@ impl Drop for PeerMessages {
     }
 }
 
+/// Recording thread to ensure as little latency as possible
 fn message_recording(db: Arc<MessageDatabase>, recv: Receiver<(Nsec, PeerMessage)>) {
     for (k, v) in recv {
         let _ = db.put(&k, &v);
     }
 }
 
+/// Message storage schema, store message associated with nanosecond after start of the node.
 impl KeyValueSchema for PeerMessages {
     type Key = Nsec;
     type Value = PeerMessage;
